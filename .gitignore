@@ -1,3 +1,4 @@
 .DS_Store
 patches/*
-!patches/MyClass.php
+!patches/Calculator.php
+!patches/Calculator.add.php
