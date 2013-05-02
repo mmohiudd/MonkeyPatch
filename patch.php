@@ -62,14 +62,18 @@ class Patch {
 	* @return boolean TRUE on success or FALSE on failure	
 	*/
 	static function cls($class_name) {
+		$_class_name = self::removeNamespace($class_name);  # find the name of the class by removing namespace(s)
+		
 		# full path to the patch class
-		$qualified_file = self::getQualifiedPath(
-			self::removeNamespace($class_name)  # find the name of the class by removing namespace(s)
-		);
+		$qualified_file = self::getQualifiedPath($_class_name);
 		
 		if($qualified_file) { // there is a file by that name
+			/* TODO: fix this bug */
+			class_exists($_class_name);  # for some reason this drops the class definition!!! 
+			
 			# import classe and force override - mainly for namespaced classes
-			return runkit_import($qualified_file, RUNKIT_IMPORT_CLASSES|RUNKIT_IMPORT_OVERRIDE);
+			return runkit_import($qualified_file, 
+				RUNKIT_IMPORT_CLASSES|RUNKIT_IMPORT_CLASS_METHODS|RUNKIT_IMPORT_CLASS_CONSTS|RUNKIT_IMPORT_CLASS_PROPS|RUNKIT_IMPORT_OVERRIDE);
 		}
 
 		return False;  # by default return False
@@ -87,10 +91,10 @@ class Patch {
 	* @return boolean TRUE on success or FALSE on failure	
 	*/
 	static function method($class_name, $method_name, $code=NULL){
-		$class = new \ReflectionClass($class_name);
+		$class = new \ReflectionClass($class_name);	
 
 		$method = $class->getMethod($method_name);
-
+		
 		$visbility = RUNKIT_ACC_PUBLIC;  # usually public methods get changed
 
 		if($method->isPrivate()){  # if method is private
